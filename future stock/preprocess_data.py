@@ -121,27 +121,57 @@ def feature_engineering(data):
     
     def vma(data):
         data["VMA_50"] =data["Volume"].rolling(window=50).mean() #50-day vma
-        data["VMA_10"] =data["Volume"].rolling(windows=50).mean() #10-day VMA
+        data["VMA_10"] =data["Volume"].rolling(window=50).mean() #10-day VMA
 
         #calculating on-balance volume(OBV)
         data["Daily_change"] = data["Close"].diff()
         data["OBV"] =(data["Volume"] * data["Daily_change"].apply(lambda x: 1 if x> 0 else (-1 if x<0 else 0))).cumsum()
 
         #calcukatre volume price trend
-        data["VPI"]= ((data["close"].diff()/data.shift(1))
-                      * data["volume"]).cumsum()
+        data["VPI"]= ((data["Close"].diff()/data["Close"].shift(1))
+                      * data["Volume"]).cumsum()
         
         #plot volume trend indicators
         plt.figure(figsize=(12,6))
 
         #plot volume moving average
         plt.subplot(3,1,1)
-        plt.plot()
+        plt.plot(data.index, data["Volume"], label="Volume", color="gray", alpha=0.6)
+        plt.plot(data.index, data["VMA_50"], label="50-day VMA", color="blue", linewidth=2.5)
+        plt.plot(data.index, data["VMA_10"], label="10_day VMA", color="red")
+        plt.title("Volume Moving Averages")
+        plt.legend()
+
+        #plot OBV
+        plt.subplot(3,1,2)
+        plt.plot(data.index, data["OBV"], label="On-balance Volume(OBV)",color="purple")
+        plt.title("On-Balance Volume (OBV)")
+        plt.legend()
+        #Plot VPT
+
+        plt.subplot(3,1,3)
+        plt.plot(data.index, data["VPI"], label="Volume Price Trend (VPT)", color="green")
+        plt.title("Volume price trend (VPT)")
+        plt.legend()
+
+        plt.tight_layout()
+        plt.show()
+    
+
+    def historical_price_difference(data, periods=[1,3,5,10] ):
+        for period in periods:
+            col_name= f"price_change_{period}D"
+            data[col_name]= data["Close"]- data["Close"].shift(period)
+        print("historical pricechanges /n")
+        print(data)
+    
+
+
         
 
 
-
    
+
     #ema_sma(data)
     #rsi(data)
 
@@ -149,10 +179,16 @@ def feature_engineering(data):
     t1= threading.Thread(target=ema_sma(data))
     t2= threading.Thread(target=rsi(data))
     t3= threading.Thread(target=macd(data))
+    t4= threading.Thread(target= vma(data))
+    t5=threading.Thread(target=historical_price_difference(data))
+
 
     t1.start()
     t2.start()
     t3.start()
+    t4.start()
+    t5.start()
+    
 
 
 
