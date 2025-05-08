@@ -6,6 +6,9 @@ import time
 from loading_anime import loading_animation
 import numpy as np
 import threading
+from newsapi import NewsApiClient
+from newspaper import Article
+from textblob import TextBlob
 
 import matplotlib.pyplot as plt
 
@@ -23,7 +26,7 @@ def read_csv():
         time.sleep(1)
 
         
-        return data
+        return data,name
         
         
         
@@ -31,7 +34,7 @@ def read_csv():
         print("oooops, you have entered the wrong name please check the spelling\n")
         read_csv()
 
-data = read_csv() #calling read csv
+data,name = read_csv() #calling read csv
 
 # function for inspect
 def inspect_data(data_ins):
@@ -46,7 +49,7 @@ def inspect_data(data_ins):
 
 
 
-def feature_engineering(data):
+def feature_engineering(data,name):
     def ema_sma(data):
     #computing the 50 day and 200 day simple moving averages
         data['SMA_50'] = data['Close'].rolling(window=50).mean()
@@ -164,6 +167,66 @@ def feature_engineering(data):
             data[col_name]= data["Close"]- data["Close"].shift(period)
         print("historical pricechanges /n")
         print(data)
+
+    
+  #  newsapi = NewsApiClient(api_key='dad7397d398a496e9a1d341c9eaf7fcc')
+
+
+
+
+    def sentiment_analysys(name):
+        #search for recent news about the company
+        newsapi = NewsApiClient(api_key='dad7397d398a496e9a1d341c9eaf7fcc')
+
+        response = newsapi.get_everything(
+            q=name, #keyword to search
+            sort_by='relevancy',
+            language='en',
+            page_size=20
+        )
+        #extract article URLs
+        urls = [article['url'] for article in response['articles']]
+
+        #download article using newspaper 3k
+
+        texts=[]
+
+        for url in urls:
+            try:
+                article= Article(url)
+                article.download()
+                article.parse()
+                texts.append(article.text)
+            except Exception as e: #some url that has ads or something else might fail
+                print(f"failed t process {url}: {e}")
+
+        sentiment_scores = [] # getting sentiment score
+
+        for text in texts:
+            score= TextBlob(text).sentiment.polarity
+            sentiment_scores.append(score)
+        
+        #computing avg sentiment score
+
+        if sentiment_scores:
+            avg_sentiment =sum(sentiment_scores)/ len(sentiment_scores)
+        else:
+            avg_sentiment=0 #default if no valid articles
+
+        #output
+        print(f"\n Average sentiment scores for news :{avg_sentiment:.2f}")
+
+        if avg_sentiment > 0.3:
+            print("positive, potential bullish")
+        elif avg_sentiment < -0.3:
+            print("market sentiment is negetive -be careful")
+        else:
+            print("market sentiment is nuetral")
+
+
+
+
+
     
 
 
@@ -181,6 +244,7 @@ def feature_engineering(data):
     t3= threading.Thread(target=macd(data))
     t4= threading.Thread(target= vma(data))
     t5=threading.Thread(target=historical_price_difference(data))
+    t6=threading.Thread(target=sentiment_analysys(name,))
 
 
     t1.start()
@@ -188,6 +252,7 @@ def feature_engineering(data):
     t3.start()
     t4.start()
     t5.start()
+    t6.start()
     
 
 
@@ -196,6 +261,6 @@ def feature_engineering(data):
 
 
 inspect_data(data)
-feature_engineering(data)
+feature_engineering(data,name)
 
 
