@@ -1,0 +1,7 @@
+pandas
+numpy
+scikit-learn
+newsapi-python
+newspaper3k
+textblob
+yfinance
