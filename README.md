@@ -28,5 +28,8 @@ pip install yfinance
 2. Execute `python enhanced_stock_predictor.py` from the repository root and
    select one of the downloaded stock symbols when prompted.
 
+The prediction script now displays a preview of all engineered features before
+training so you can inspect the data it uses.
+
 `enhanced_stock_predictor.py` loads the saved CSV files directly so it works
 independently of the other scripts once the data is in place.
