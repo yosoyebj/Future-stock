@@ -11,17 +11,14 @@ rows before showing the prediction.
 ## Requirements
 
 The prediction script relies on several third‑party libraries.  Install them
-with `pip` before running any of the tools:
+using the provided requirements file before running any of the tools:
 
 ```bash
-pip install pandas numpy scikit-learn newsapi-python newspaper3k textblob
+pip install -r requirements.txt
 ```
 
-If you also need to fetch new stock data, install `yfinance`:
-
-```bash
-pip install yfinance
-```
+This file includes all libraries needed by `enhanced_stock_predictor.py` as
+well as `yfinance` for downloading new datasets.
 
 ## Basic usage
 
