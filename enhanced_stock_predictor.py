@@ -83,6 +83,15 @@ def prepare_dataset(name: str):
     return X, y, df
 
 
+def display_features(df: pd.DataFrame, rows: int = 5) -> None:
+    """Print available features and show a sample of the engineered data."""
+    features = df.drop('target', axis=1)
+    print("\nFeature columns:")
+    print(", ".join(features.columns))
+    print("\nSample after feature engineering:")
+    print(features.head(rows))
+
+
 def train_model(X: pd.DataFrame, y: pd.Series) -> LinearRegression:
     model = LinearRegression()
     model.fit(X, y)
@@ -101,6 +110,8 @@ def main():
     except FileNotFoundError:
         print("CSV for given symbol not found.")
         return
+
+    display_features(df)
 
     model = train_model(X, y)
     latest_features = df.drop('target', axis=1).iloc[-1:]
